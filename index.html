@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧠 Memory AI Assistant - 智能记忆助手</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .main-container {
+            max-width: 1400px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 20px;
+            height: 90vh;
+        }
+
+        /* 左侧信息面板 */
+        .info-panel {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .logo {
+            font-size: 64px;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .info-panel h1 {
+            font-size: 24px;
+            color: #2d3748;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .tagline {
+            text-align: center;
+            color: #718096;
+            font-size: 14px;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2d3748;
+            margin: 20px 0 12px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .features {
+            list-style: none;
+        }
+
+        .features li {
+            padding: 12px 0;
+            color: #4a5568;
+            font-size: 14px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .features li::before {
+            content: "✓";
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            background: #48bb78;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 20px;
+            font-size: 12px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .demo-examples {
+            background: #edf2f7;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+
+        .demo-examples h4 {
+            font-size: 13px;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .demo-examples p {
+            font-size: 12px;
+            color: #4a5568;
+            margin: 6px 0;
+            padding-left: 10px;
+            border-left: 3px solid #667eea;
+        }
+
+        .tech-stack {
+            margin-top: auto;
+            padding-top: 20px;
+            border-top: 2px solid #e2e8f0;
+            font-size: 12px;
+            color: #718096;
+        }
+
+        .tech-stack strong {
+            display: block;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+
+        /* 右侧聊天容器 */
+        .chat-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .chat-header .icon {
+            font-size: 32px;
+        }
+
+        .chat-header-text h2 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .chat-header-text .subtitle {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 25px;
+            background: #f7fafc;
+        }
+
+        .message {
+            margin-bottom: 16px;
+            display: flex;
+            gap: 12px;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .message.user .message-avatar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .message.assistant .message-avatar {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 16px;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.assistant .message-content {
+            background: white;
+            color: #2d3748;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .memory-badge {
+            display: inline-block;
+            background: #fef5e7;
+            color: #d68910;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            margin-left: 6px;
+            font-weight: 600;
+        }
+
+        .typing-indicator {
+            display: none;
+        }
+
+        .typing-indicator.active {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+            padding: 12px 16px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .typing-dots span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #cbd5e0;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+            30% { transform: translateY(-8px); opacity: 1; }
+        }
+
+        .welcome-message {
+            text-align: center;
+            padding: 40px 20px;
+            color: #718096;
+        }
+
+        .welcome-message h3 {
+            color: #2d3748;
+            margin-bottom: 12px;
+            font-size: 20px;
+        }
+
+        .welcome-message p {
+            margin-bottom: 20px;
+        }
+
+        .welcome-examples {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 25px;
+        }
+
+        .example-chip {
+            padding: 10px 18px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 13px;
+            color: #4a5568;
+        }
+
+        .example-chip:hover {
+            border-color: #667eea;
+            background: #f7fafc;
+            transform: translateY(-2px);
+        }
+
+        .input-area {
+            padding: 20px 25px;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            gap: 12px;
+        }
+
+        .input-area input {
+            flex: 1;
+            padding: 14px 18px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .input-area input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .input-area button {
+            padding: 14px 28px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .input-area button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .input-area button:active {
+            transform: translateY(0);
+        }
+
+        .input-area button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .api-config-notice {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 12px;
+            padding: 15px;
+            margin: 20px;
+            text-align: center;
+        }
+
+        .api-config-notice h4 {
+            color: #856404;
+            margin-bottom: 8px;
+        }
+
+        .api-config-notice p {
+            color: #856404;
+            font-size: 13px;
+            margin: 4px 0;
+        }
+
+        .api-config-notice code {
+            background: #ffe8a1;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+
+            .info-panel {
+                max-height: none;
+            }
+
+            .chat-container {
+                height: 600px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- 左侧信息面板 -->
+        <div class="info-panel">
+            <div class="logo">🧠</div>
+            <h1>Memory AI Assistant</h1>
+            <p class="tagline">智能记忆助手 - 永远记住你</p>
+
+            <div class="section-title">✨ 核心功能</div>
+            <ul class="features">
+                <li>自动识别并记住重要信息</li>
+                <li>智能区分长期记忆和短期对话</li>
+                <li>个性化回复，引用历史记忆</li>
+                <li>自动分类：偏好、事实、目标、习惯</li>
+                <li>跨会话记忆保持</li>
+                <li>基于上下文的智能检索</li>
+            </ul>
+
+            <div class="section-title">💡 使用示例</div>
+            <div class="demo-examples">
+                <h4>第一步：告诉我关于你的信息</h4>
+                <p>💬 "我叫张三，我是一名软件工程师"</p>
+                <p>❤️ "我喜欢喝咖啡和阅读科幻小说"</p>
+                <p>🎯 "我的目标是今年学会Python"</p>
+                
+                <h4 style="margin-top: 15px;">第二步：测试记忆功能</h4>
+                <p>🔍 "你知道我的职业吗？"</p>
+                <p>🔍 "推荐一些适合我的书籍"</p>
+                <p>🔍 "我喜欢什么饮料？"</p>
+            </div>
+
+            <div class="section-title">🎯 项目亮点</div>
+            <ul class="features">
+                <li>基于LLM的智能分类判断</li>
+                <li>条件路由实现长短期记忆分离</li>
+                <li>向量相似度检索相关记忆</li>
+                <li>个性化对话体验</li>
+            </ul>
+
+            <div class="tech-stack">
+                <strong>🔧 技术栈</strong>
+                平台: Airia AI Platform<br>
+                模型: Claude 3.5 Sonnet (via OpenRouter)<br>
+                架构: Memory Classification + Conditional Routing<br>
+                存储: Airia Memory System
+            </div>
+        </div>
+
+        <!-- 右侧聊天容器 -->
+        <div class="chat-container">
+            <div class="chat-header">
+                <div class="icon">💬</div>
+                <div class="chat-header-text">
+                    <h2>开始对话</h2>
+                    <div class="subtitle">体验有记忆的AI助手</div>
+                </div>
+            </div>
+
+            <!-- API配置提示 -->
+            <div class="api-config-notice" id="apiNotice">
+                <h4>⚙️ 配置说明</h4>
+                <p>此页面为演示界面，需要配置Airia API才能使用。</p>
+                <p>请在代码中修改 <code>CONFIG.API_ENDPOINT</code> 和 <code>CONFIG.API_KEY</code></p>
+                <p style="margin-top: 8px; font-size: 12px;">或者使用下方的模拟演示模式体验功能</p>
+            </div>
+
+            <div class="messages" id="messages">
+                <div class="welcome-message">
+                    <h3>👋 你好！我是Memory AI</h3>
+                    <p>我可以记住你告诉我的信息，并在之后的对话中引用它们。</p>
+                    <p style="font-size: 13px; color: #a0aec0;">试试点击下面的示例开始对话 ⬇️</p>
+                    
+                    <div class="welcome-examples">
+                        <div class="example-chip" onclick="sendExample('我叫李华，我是一名教师')">
+                            👤 介绍自己
+                        </div>
+                        <div class="example-chip" onclick="sendExample('我喜欢喝咖啡和看科幻电影')">
+                            ❤️ 分享爱好
+                        </div>
+                        <div class="example-chip" onclick="sendExample('我的目标是学会Python编程')">
+                            🎯 设定目标
+                        </div>
+                        <div class="example-chip" onclick="sendExample('你知道我是做什么工作的吗？')">
+                            🔍 测试记忆
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-area">
+                <input 
+                    type="text" 
+                    id="userInput" 
+                    placeholder="输入消息... (按Enter发送)" 
+                    onkeypress="handleKeyPress(event)"
+                >
+                <button onclick="sendMessage()" id="sendButton">发送</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 配置区 ====================
+        const CONFIG = {
+            // TODO: 替换成你的Airia API信息
+            API_ENDPOINT: 'https://api.airia.ai/v2/PipelineExecution/6f533036-6546-4f0d-9e3c-a0dc78c03521',  // 例如: 'https://api.airia.com/v1/agents/xxx/execute'
+            API_KEY: 'ak-OTQ5MTk3MzA0fDE3NjI2Mjg1MTg4Mjl8dGktUTJGeWJtVm5hV1VnVFdWc2JHOXVJRlZ1YVhabGNuTnBkSGt0VDNCbGJpQlNaV2RwYzNSeVlYUnBiMjR0VUhKdlptVnpjMmx2Ym1Gc1h6TTVObUZrTlRFNExXUm1ZbUV0TkRBeE1DMDVaREF6TFdZMVpXWTFNR0kwTURaaU1nPT18MXwzNDg4MzIzODIz',       // 你的Airia API Key
+            USE_DEMO_MODE: true  // 如果没有API，使用演示模式
+        };
+
+        // ==================== 核心功能 ====================
+        const messagesDiv = document.getElementById('messages');
+        const userInput = document.getElementById('userInput');
+        const sendButton = document.getElementById('sendButton');
+
+        // 模拟记忆存储（演示模式用）
+        let memoryBank = [];
+
+        // 添加消息
+        function addMessage(role, content, hasMemory = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = role === 'user' ? '👤' : '🤖';
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.innerHTML = content + (hasMemory ? '<span class="memory-badge">已记忆</span>' : '');
+            
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(contentDiv);
+            messagesDiv.appendChild(messageDiv);
+            
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            
+            const welcome = messagesDiv.querySelector('.welcome-message');
+            if (welcome) welcome.remove();
+        }
+
+        // 显示输入中...
+        function showTyping() {
+            const typing = document.createElement('div');
+            typing.className = 'message assistant';
+            typing.id = 'typing-indicator';
+            typing.innerHTML = `
+                <div class="message-avatar">🤖</div>
+                <div class="typing-indicator active">
+                    <div class="typing-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            `;
+            messagesDiv.appendChild(typing);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function hideTyping() {
+            const typing = document.getElementById('typing-indicator');
+            if (typing) typing.remove();
+        }
+
+        // 演示模式 - 模拟AI回复
+        function getDemoResponse(message) {
+            const lowerMsg = message.toLowerCase();
+            
+            // 检测需要记忆的信息
+            const memoryPatterns = [
+                { pattern: /我叫(.+?)([，。]|$)/, category: 'fact', extract: (m) => `用户叫${m[1]}` },
+                { pattern: /我是(.+?)([，。]|$)/, category: 'fact', extract: (m) => `用户职业是${m[1]}` },
+                { pattern: /我喜欢(.+?)([，。]|$)/, category: 'preference', extract: (m) => `用户喜欢${m[1]}` },
+                { pattern: /我的目标是(.+?)([，。]|$)/, category: 'goal', extract: (m) => `用户目标：${m[1]}` },
+            ];
+
+            let shouldStore = false;
+            let memoryText = '';
+
+            for (const { pattern, category, extract } of memoryPatterns) {
+                const match = message.match(pattern);
+                if (match) {
+                    shouldStore = true;
+                    memoryText = extract(match);
+                    memoryBank.push({ text: memoryText, category, original: message });
+                    break;
+                }
+            }
+
+            // 生成回复
+            if (shouldStore) {
+                return {
+                    reply: `好的，我记住了！${memoryText}。有什么我可以帮你的吗？`,
+                    hasMemory: true
+                };
+            }
+
+            // 检索相关记忆
+            const relevantMemories = memoryBank.filter(mem => {
+                const memWords = mem.text.toLowerCase().split(/\s+/);
+                const inputWords = lowerMsg.split(/\s+/);
+                return memWords.some(w => inputWords.includes(w));
+            });
+
+            // 根据问题类型生成回复
+            if (lowerMsg.includes('职业') || lowerMsg.includes('工作') || lowerMsg.includes('做什么')) {
+                const jobMem = memoryBank.find(m => m.text.includes('职业'));
+                if (jobMem) {
+                    return { reply: `根据我的记忆，${jobMem.text}。`, hasMemory: false };
+                }
+                return { reply: '抱歉，你还没有告诉我你的职业信息呢。', hasMemory: false };
+            }
+
+            if (lowerMsg.includes('名字') || lowerMsg.includes('叫什么')) {
+                const nameMem = memoryBank.find(m => m.text.includes('叫'));
+                if (nameMem) {
+                    return { reply: `我记得${nameMem.text}！`, hasMemory: false };
+                }
+                return { reply: '你还没有告诉我你的名字呢。', hasMemory: false };
+            }
+
+            if (lowerMsg.includes('喜欢') || lowerMsg.includes('爱好')) {
+                const prefMem = memoryBank.find(m => m.category === 'preference');
+                if (prefMem) {
+                    return { reply: `我记得${prefMem.text}！`, hasMemory: false };
+                }
+            }
+
+            if (lowerMsg.includes('推荐') || lowerMsg.includes('建议')) {
+                if (relevantMemories.length > 0) {
+                    const context = relevantMemories.map(m => m.text).join('，');
+                    return { 
+                        reply: `基于我对你的了解（${context}），我建议你可以尝试一些相关的内容。比如如果你是程序员，可以看看《代码大全》；如果你喜欢科幻，推荐《三体》系列。`, 
+                        hasMemory: false 
+                    };
+                }
+            }
+
+            if (lowerMsg.includes('目标')) {
+                const goalMem = memoryBank.find(m => m.category === 'goal');
+                if (goalMem) {
+                    return { reply: `我记得${goalMem.text}。需要我帮你制定学习计划吗？`, hasMemory: false };
+                }
+            }
+
+            // 默认回复
+            if (memoryBank.length > 0) {
+                return { 
+                    reply: `我理解了。目前我记住了${memoryBank.length}条关于你的信息。有什么我可以帮你的吗？`, 
+                    hasMemory: false 
+                };
+            }
+
+            return { 
+                reply: '你好！我是Memory AI。你可以告诉我一些关于你的信息，比如你的名字、职业、爱好等，我会记住它们。', 
+                hasMemory: false 
+            };
+        }
+
+        // 发送消息
+        async function sendMessage() {
+            const message = userInput.value.trim();
+            if (!message) return;
+
+            addMessage('user', message);
+            userInput.value = '';
+            sendButton.disabled = true;
+            showTyping();
+
+            // 模拟网络延迟
+            await new Promise(resolve => setTimeout(resolve, 800 + Math.random() * 1200));
+
+            try {
+                let reply, hasMemory;
+
+                if (CONFIG.USE_DEMO_MODE || !CONFIG.API_ENDPOINT) {
+                    // 演示模式
+                    const response = getDemoResponse(message);
+                    reply = response.reply;
+                    hasMemory = response.hasMemory;
+                } else {
+                    // 真实API调用
+                    const response = await fetch(CONFIG.API_ENDPOINT, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${CONFIG.API_KEY}`,
+                        },
+                        body: JSON.stringify({
+                            input: message,
+                        })
+                    });
+
+                    const data = await response.json();
+                    reply = data.output || data.response || data.result || '抱歉，我暂时无法回复。';
+                    hasMemory = false; // 根据实际API返回判断
+                }
+
+                hideTyping();
+                addMessage('assistant', reply, hasMemory);
+
+            } catch (error) {
+                hideTyping();
+                addMessage('assistant', '❌ 连接失败。当前运行在演示模式下。');
+                console.error('Error:', error);
+            }
+
+            sendButton.disabled = false;
+            userInput.focus();
+        }
+
+        // 发送示例
+        function sendExample(text) {
+            userInput.value = text;
+            sendMessage();
+        }
+
+        // 键盘事件
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        // 初始化
+        window.onload = () => {
+            userInput.focus();
+            
+            // 如果配置了API，隐藏提示
+            if (CONFIG.API_ENDPOINT && CONFIG.API_KEY) {
+                const notice = document.getElementById('apiNotice');
+                if (notice) notice.style.display = 'none';
+            }
+        };
+    </script>
+</body>
+</html>
